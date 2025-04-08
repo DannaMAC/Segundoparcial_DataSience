@@ -1,2 +1,4 @@
 svm_model_soybean.pkl
 soybean-small.data
+__pycache__/
+*.py[cod]

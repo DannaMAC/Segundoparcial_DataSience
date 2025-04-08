@@ -3,13 +3,53 @@ import pandas as pd
 import joblib
 from modelo import cargar_modelo
 
-# Configuración de la página
-st.set_page_config(page_title="Clasificador de Enfermedades de Soja", layout="wide")
+st.set_page_config(page_title="Clasificador de Enfermedades de Soya", layout="wide")
 
-# Título de la aplicación
-st.title("Sistema de Diagnóstico de Enfermedades en Plantas de Soja")
+st.markdown("""
+    <style>
+    /* Fondo general */
+    .stApp {
+        background-image: url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjIZOG3YgrUv-eWxVSq7qYNknj-NV6tzNFAw&s");
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }
+    .main-container {
+        background-color: rgba(255, 255, 255, 0.9);
+        border-radius: 20px;
+        padding: 3rem;
+        box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.3);
+        margin-top: 2rem;
+        margin-bottom: 2rem;
+    }
 
-# Cargar modelo
+    h1, h2, h3 {
+        color: #2e7d32;
+        font-weight: 700;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+    }
+
+    .stButton>button {
+        background-color: #2e7d32;
+        color: black;
+        border: none;
+        padding: 0.6rem 1.5rem;
+        font-size: 1.1rem;
+        border-radius: 12px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s ease-in-out;
+    }
+    .stButton>button:hover {
+        background-color: #1b5e20;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+st.markdown("<div class='main-container'>", unsafe_allow_html=True)
+st.title("🌿 Clasificador de Enfermedades en Plantas de Soya")
+
 try:
     model, scaler, encoder = cargar_modelo()
     st.success("Modelo cargado correctamente")
@@ -17,107 +57,80 @@ except Exception as e:
     st.error(f"Error al cargar el modelo: {str(e)}")
     st.stop()
 
-# Sección para ingresar datos
-st.header("Ingrese los síntomas observados")
+st.subheader("🧪 Ingresa los síntomas observados:")
 
-# Crear un formulario para ingresar los datos
 with st.form("diagnostic_form"):
-    date = st.selectbox("Fecha de observación", ["abril", "mayo", "junio", "julio"])
-    plant_stand = st.selectbox("Porte de la planta", ["normal", "lt-normal"])
-    precip = st.selectbox("Precipitación", ["lt-norm", "norm", "gt-norm"])
-    temp = st.selectbox("Temperatura", ["lt-norm", "norm", "gt-norm"])
-    hail = st.selectbox("Granizo", ["yes", "no"])
-    crop_hist = st.selectbox("Historial de cultivo", ["continuous", "previous", "none"])
-    area_damaged = st.selectbox("Área dañada", ["none", "low", "medium", "high"])
-    severity = st.selectbox("Severidad", ["none", "low", "medium", "high"])
-    seed_tmt = st.selectbox("Tratamiento de semillas", ["none", "tmt1", "tmt2", "tmt3"])
-    germination = st.selectbox("Germinación", ["low", "high"])
-    plant_growth = st.selectbox("Crecimiento de la planta", ["normal", "stunted", "luxuriant"])
-    leaves = st.selectbox("Hojas", ["normal", "abnormal"])
-    leafspots_halo = st.selectbox("Manchas en hojas - halo", ["yes", "no"])
-    leafspots_marg = st.selectbox("Manchas en hojas - margen", ["yes", "no"])
-    leafspot_size = st.selectbox("Tamaño de las manchas en hojas", ["small", "medium", "large"])
-    leaf_shread = st.selectbox("Desgarro de hojas", ["yes", "no"])
-    leaf_malf = st.selectbox("Malformación de hojas", ["yes", "no"])
-    leaf_mild = st.selectbox("Manchas leves en hojas", ["yes", "no"])
-    stem = st.selectbox("Tallos", ["normal", "abnormal"])
-    lodging = st.selectbox("Alojamientos", ["yes", "no"])
-    stem_cankers = st.selectbox("Cánceres en el tallo", ["yes", "no"])
-    canker_lesion = st.selectbox("Lesión en cáncer", ["yes", "no"])
-    fruiting_bodies = st.selectbox("Cuerpos fructíferos", ["yes", "no"])
-    external_decay = st.selectbox("Decaimiento externo", ["yes", "no"])
-    mycelium = st.selectbox("Micelio", ["yes", "no"])
-    int_discolor = st.selectbox("Descoloración interna", ["yes", "no"])
-    sclerotia = st.selectbox("Esclerotia", ["yes", "no"])
-    fruit_pods = st.selectbox("Vainas de fruta", ["none", "few", "some", "many"])
-    fruit_spots = st.selectbox("Manchas en fruta", ["yes", "no"])
-    seed = st.selectbox("Semillas", ["normal", "abnormal"])
-    mold_growth = st.selectbox("Crecimiento de moho", ["yes", "no"])
-    seed_discolor = st.selectbox("Descoloración de semilla", ["yes", "no"])
-    seed_size = st.selectbox("Tamaño de semilla", ["small", "medium", "large"])
-    shriveling = st.selectbox("Arrugamiento", ["yes", "no"])
-    roots = st.selectbox("Raíces", ["normal", "abnormal"])
+    cols = st.columns(3)
+    campos = [
+        "date", "plant-stand", "precip", "temp", "hail", "crop-hist", "area-damaged", "severity", 
+        "seed-tmt", "germination", "plant-growth", "leaves", "leafspots-halo", "leafspots-marg", 
+        "leafspot-size", "leaf-shread", "leaf-malf", "leaf-mild", "stem", "lodging", "stem-cankers", 
+        "canker-lesion", "fruiting-bodies", "external-decay", "mycelium", "int-discolor", "sclerotia", 
+        "fruit-pods", "fruit-spots", "seed", "mold-growth", "seed-discolor", "seed-size", "shriveling", "roots"
+    ]
+    
+    opciones = {
+        "date": ["abril", "mayo", "junio", "julio"],
+        "plant-stand": ["normal", "lt-normal"],
+        "precip": ["lt-norm", "norm", "gt-norm"],
+        "temp": ["lt-norm", "norm", "gt-norm"],
+        "hail": ["yes", "no"],
+        "crop-hist": ["continuous", "previous", "none"],
+        "area-damaged": ["none", "low", "medium", "high"],
+        "severity": ["none", "low", "medium", "high"],
+        "seed-tmt": ["none", "tmt1", "tmt2", "tmt3"],
+        "germination": ["low", "high"],
+        "plant-growth": ["normal", "stunted", "luxuriant"],
+        "leaves": ["normal", "abnormal"],
+        "leafspots-halo": ["yes", "no"],
+        "leafspots-marg": ["yes", "no"],
+        "leafspot-size": ["small", "medium", "large"],
+        "leaf-shread": ["yes", "no"],
+        "leaf-malf": ["yes", "no"],
+        "leaf-mild": ["yes", "no"],
+        "stem": ["normal", "abnormal"],
+        "lodging": ["yes", "no"],
+        "stem-cankers": ["yes", "no"],
+        "canker-lesion": ["yes", "no"],
+        "fruiting-bodies": ["yes", "no"],
+        "external-decay": ["yes", "no"],
+        "mycelium": ["yes", "no"],
+        "int-discolor": ["yes", "no"],
+        "sclerotia": ["yes", "no"],
+        "fruit-pods": ["none", "few", "some", "many"],
+        "fruit-spots": ["yes", "no"],
+        "seed": ["normal", "abnormal"],
+        "mold-growth": ["yes", "no"],
+        "seed-discolor": ["yes", "no"],
+        "seed-size": ["small", "medium", "large"],
+        "shriveling": ["yes", "no"],
+        "roots": ["normal", "abnormal"]
+    }
+
+    respuestas = {}
+    for i, campo in enumerate(campos):
+        with cols[i % 3]:
+            respuestas[campo] = st.selectbox(campo.replace("-", " ").capitalize(), opciones[campo])
 
     submitted = st.form_submit_button("Diagnosticar")
 
 if submitted:
     try:
-        # Crear dataframe con los datos ingresados
-        input_data = pd.DataFrame({
-            'date': [date],
-            'plant-stand': [plant_stand],
-            'precip': [precip],
-            'temp': [temp],
-            'hail': [hail],
-            'crop-hist': [crop_hist],
-            'area-damaged': [area_damaged],
-            'severity': [severity],
-            'seed-tmt': [seed_tmt],
-            'germination': [germination],
-            'plant-growth': [plant_growth],
-            'leaves': [leaves],
-            'leafspots-halo': [leafspots_halo],
-            'leafspots-marg': [leafspots_marg],
-            'leafspot-size': [leafspot_size],
-            'leaf-shread': [leaf_shread],
-            'leaf-malf': [leaf_malf],
-            'leaf-mild': [leaf_mild],
-            'stem': [stem],
-            'lodging': [lodging],
-            'stem-cankers': [stem_cankers],
-            'canker-lesion': [canker_lesion],
-            'fruiting-bodies': [fruiting_bodies],
-            'external-decay': [external_decay],
-            'mycelium': [mycelium],
-            'int-discolor': [int_discolor],
-            'sclerotia': [sclerotia],
-            'fruit-pods': [fruit_pods],
-            'fruit-spots': [fruit_spots],
-            'seed': [seed],
-            'mold-growth': [mold_growth],
-            'seed-discolor': [seed_discolor],
-            'seed-size': [seed_size],
-            'shriveling': [shriveling],
-            'roots': [roots],
-        })
-
-        # Asegurarse de que las columnas coincidan con las que se entrenaron
-        # Obtenemos las columnas esperadas del encoder
-        expected_columns = encoder.get_feature_names_out(input_data.columns)
-        
-        # Reindexar las columnas del DataFrame para alinearlas con las esperadas
-        input_data = input_data.reindex(columns=expected_columns, fill_value=0)
-
-        # Preprocesamiento
+        input_data = pd.DataFrame({k: [v] for k, v in respuestas.items()})
         X_encoded = encoder.transform(input_data)
-        X_scaled = scaler.transform(X_encoded)
-        
-        # Predicción
+        X_encoded_df = pd.DataFrame(X_encoded, columns=encoder.get_feature_names_out(input_data.columns))
+        X_scaled = scaler.transform(X_encoded_df)
+
         prediction = model.predict(X_scaled)
         probability = model.predict_proba(X_scaled).max()
-        
-        # Mostrar resultados
-        st.success(f"Diagnóstico: {prediction[0]} (Confianza: {probability:.2%})")
-        
+
+        st.markdown(f"""
+        <div style='text-align: center; margin-top: 30px;'>
+            <h2 style='color: #1b5e20;'>Diagnóstico: <b>{prediction[0]}</b></h2>
+            <p style='font-size: 1.2rem;'>Confianza del modelo: <b>{probability:.2%}</b></p>
+        </div>
+        """, unsafe_allow_html=True)
     except Exception as e:
-        st.error(f"Error al realizar la predicción: {str(e)}")
+        st.error(f"Error en la predicción: {str(e)}")
+
+st.markdown("</div>", unsafe_allow_html=True)

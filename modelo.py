@@ -20,7 +20,7 @@ def cargar_modelo():
 
 def entrenar_modelo():
     """Función principal para entrenar el modelo"""
-    # Cargar datos
+    # Cargar datos desde la URL correcta
     url = "https://archive.ics.uci.edu/ml/machine-learning-databases/soybean/soybean-small.data"
     column_names = ['class', 'date', 'plant-stand', 'precip', 'temp', 'hail', 'crop-hist', 'area-damaged', 
                    'severity', 'seed-tmt', 'germination', 'plant-growth', 'leaves', 'leafspots-halo', 
@@ -30,6 +30,7 @@ def entrenar_modelo():
                    'mold-growth', 'seed-discolor', 'seed-size', 'shriveling', 'roots']
 
     try:
+        # Descargar datos desde la URL
         response = requests.get(url, timeout=10)
         if response.status_code == 200:
             data = StringIO(response.text)
