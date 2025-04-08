@@ -20,7 +20,6 @@ def cargar_modelo():
 
 def entrenar_modelo():
     """Función principal para entrenar el modelo"""
-    # Cargar datos desde la URL correcta
     url = "https://archive.ics.uci.edu/ml/machine-learning-databases/soybean/soybean-small.data"
     column_names = ['class', 'date', 'plant-stand', 'precip', 'temp', 'hail', 'crop-hist', 'area-damaged', 
                    'severity', 'seed-tmt', 'germination', 'plant-growth', 'leaves', 'leafspots-halo', 
@@ -30,7 +29,6 @@ def entrenar_modelo():
                    'mold-growth', 'seed-discolor', 'seed-size', 'shriveling', 'roots']
 
     try:
-        # Descargar datos desde la URL
         response = requests.get(url, timeout=10)
         if response.status_code == 200:
             data = StringIO(response.text)
@@ -47,35 +45,29 @@ def entrenar_modelo():
             print("No se pudo cargar el dataset.")
             return None, None, None
 
-    # Limpieza de datos
     df.replace('?', pd.NA, inplace=True)
     df.dropna(inplace=True)
     print(f"\nFilas después de limpieza: {len(df)}")
 
-    # Reducir a las 4 clases principales
     top_classes = df['class'].value_counts().nlargest(4).index
     df = df[df['class'].isin(top_classes)]
     print("\nDistribución después de filtrar clases:")
     print(df['class'].value_counts())
 
-    # Preprocesamiento
-    categorical_columns = column_names[1:]  # Todas excepto 'class'
+    categorical_columns = column_names[1:]  
     encoder = OneHotEncoder(handle_unknown='ignore', sparse_output=False)
     X_encoded = encoder.fit_transform(df[categorical_columns])
     X = pd.DataFrame(X_encoded, columns=encoder.get_feature_names_out(categorical_columns))
     y = df['class']
 
-    # Dividir datos
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42, stratify=y)
 
-    # Escalado (importante para SVM)
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.transform(X_test)
 
-    # Balanceo de clases con SMOTE ajustado dinámicamente
-    min_samples = Counter(y_train).most_common()[-1][1]  # Muestras en la clase más pequeña
+    min_samples = Counter(y_train).most_common()[-1][1]  
     k_neighbors = min(2, min_samples - 1)
 
     if k_neighbors < 1:
@@ -88,7 +80,6 @@ def entrenar_modelo():
         smote = SMOTE(random_state=42, k_neighbors=k_neighbors)
         X_train_resampled, y_train_resampled = smote.fit_resample(X_train_scaled, y_train)
 
-    # Configuración del modelo SVM optimizado
     best_params = {
         'C': 10,
         'gamma': 'scale',
@@ -101,12 +92,10 @@ def entrenar_modelo():
     model = SVC(**best_params)
     model.fit(X_train_resampled, y_train_resampled)
 
-    # Evaluación
     y_pred = model.predict(X_test_scaled)
     print("\nInforme de clasificación:\n", classification_report(y_test, y_pred, zero_division=0))
     print("Matriz de confusión:\n", confusion_matrix(y_test, y_pred))
 
-    # Guardar modelo
     joblib.dump((model, scaler, encoder), 'svm_model_soybean.pkl')
     print("\nModelo SVM guardado exitosamente.")
     
